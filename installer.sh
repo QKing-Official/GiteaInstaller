@@ -21,6 +21,7 @@ GITEA_USER="gitea"
 GITEA_GROUP="gitea"
 GITEA_DIR="/srv/gitea"
 GITEA_BIN="/usr/local/bin/gitea"
+GITEA_DATA_DIR="$GITEA_DIR/data"
 
 echo "Creating Gitea user and group..."
 sudo adduser --system --group --disabled-login $GITEA_USER || true
@@ -30,6 +31,11 @@ sudo mkdir -p $GITEA_DIR/{custom,data,log}
 sudo chown -R $GITEA_USER:$GITEA_GROUP $GITEA_DIR
 sudo chmod -R 750 $GITEA_DIR
 
+# Ensure APP_DATA_PATH is set correctly
+echo "Configuring Gitea environment..."
+echo "APP_DATA_PATH=$GITEA_DATA_DIR" | sudo tee -a /etc/environment
+
+# Download Gitea
 echo "Downloading Gitea version $GITEA_VERSION..."
 wget -O gitea "https://dl.gitea.com/gitea/$GITEA_VERSION/$GITEA_BINARY"
 sudo mv gitea $GITEA_BIN
@@ -50,7 +56,7 @@ Group=$GITEA_GROUP
 WorkingDirectory=$GITEA_DIR
 ExecStart=$GITEA_BIN web
 Restart=always
-Environment=USER=$GITEA_USER HOME=$GITEA_DIR
+Environment=USER=$GITEA_USER HOME=$GITEA_DIR APP_DATA_PATH=$GITEA_DATA_DIR
 
 [Install]
 WantedBy=multi-user.target
